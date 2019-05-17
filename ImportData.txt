@@ -1,0 +1,952 @@
+
+--------------------------------------------------------------------------------------------------------------------- import data from excel----------------------------------
+
+
+
+
+
+insert into thr_tra_m m(m.pk, m.TRA_ID, m.TRA_NM, M.TRAIN_PLACE, M.TRAIN_ADDRESS,  M.TRAIN_PHONE
+                      , M.TRAIN_EMAIL, M.FACULTY_NM, M.WORK_PLACE, M.FACULTY_PHONE, M.FACULTY_EMAIL, M.START_DATE
+                      , M.END_DATE, M.DURING_DAYS, M.METHOD_TYPE, m.del_if, m.crt_by, m.crt_dt)
+                     select THR_TRA_M_SEQ.nextval, t.c1, t.c2, t.c3, t.c4, t.c5
+                        , T.C6, t.c7, t.c8, t.c9, t.c10, t.c13
+                        , t.c15, t.c16, '01', 0, 'adminvaude', sysdate
+                     from tmp_cnv3 t
+
+--select * from tmp_cnv3 a
+
+select * from thr_tra_m
+
+
+
+
+
+
+st_hr_sel_hrtr00301_1
+
+st_hr_sel_hrtr00300_2
+
+
+-------------------------------------------
+
+			
+insert into thr_tra_emp e (e.pk
+                    , e.THR_EMP_PK
+                    , E.EMP_ID
+                    , E.FULL_NAME
+                    , e.THR_TRA_M_PK
+                    , e.tco_org_pk
+                    , E.TUITION_AMT, E.OTHER_COST_AMT, E.STATUS, E.CERTIFICATE_YN, E.CERTI_YEARS
+                    , E.CERTI_FROM_DT, E.CERTI_TO_DT, E.CURRICULUM_YN, E.COMMIT_YEARS, E.COMMIT_FINISH_DT
+                    , e.del_if, E.CRT_BY, E.CRT_DT
+                    )
+              select THR_TRA_EMP_SEQ.nextval
+                    , (select emp.pk from thr_employee emp where emp.del_if = 0 and EMP.EMP_ID = t.c1) 
+                    , t.c1
+                    , t.c3
+                    , (select thm.pk from THR_TRA_M thm where thm.del_if = 0 and THM.TRA_ID = t.c4)
+                    , (select emp.tco_org_pk from thr_employee emp where emp.del_if = 0 and t.c1 = EMP.EMP_ID)
+                    , T.C7, T.C8, t.c17,t.c18, t.c19
+                    , t.c20, t.c21, t.c22, t.c24, t.c25
+                    , 0, 'adminvaude', sysdate
+    from tmp_cnv4 t 
+	 
+	 
+	 ----------------------------------------------------------
+
+
+
+
+select * from tmp_cnv3 t
+--where t.c1 not in (select E.EMP_ID from thr_employee e where e.del_if =0)
+
+
+--thr_emp_edu
+
+
+insert into thr_emp_edu edu( edu.pk
+                , edu.THR_EMP_PK
+                , edu.E_NAME, edu.MAJOR, edu.START_DT, edu.END_DT, edu.RESULT, edu.ENGLISH_STATUS, edu.OTHERS_LANG_STATUS               
+                , edu.DEL_IF, edu.CRT_BY, edu.CRT_DT)
+        select THR_EMP_EDU_SEQ.nextval
+                , e.pk
+                , t.c5, t.c7, t.c8, t.c9, t.c11, t.c13, t.c15 
+                , 0, 'adminvaude', sysdate 
+        from tmp_cnv3 t, thr_employee e
+        where e.del_if=0
+        and t.c1 = e.emp_id 
+--        and t.c1 not in (select E.EMP_ID from thr_employee e where e.del_if =0)
+
+
+
+=================================================================================== 
+
+insert into thr_emp_training
+        (
+            PK,  THR_EMP_PK, START_DT, END_DT, TRAINING_PLACE, COURSE_NAME, COURSE_TYPE, STATUS
+            ,DEL_IF, CRT_DT, CRT_BY
+        )
+        select THR_EMP_TRAINING_SEQ.nextval, E.THR_EMP_PK, M.START_DATE, M.END_DATE, M.TRAIN_PLACE, M.TRA_NM, M.TRAIN_TYPE, E.STATUS
+            , 0, sysdate, 'adminvaude'
+        from thr_tra_emp e, thr_tra_m m
+        where e.del_if = 0 and m.del_if = 0
+        and e.thr_tra_m_pk = m.pk
+        
+        
+--  select train_type from thr_tra_m where del_if = 0
+
+
+
+======================================================================================
+
+
+
+
+insert into thr_equipment
+    (   pk
+        , EQUIP_CODE
+        , EQUIP_NAME
+        ,CRT_BY
+        ,CRT_DT
+        ,DEL_IF
+    )
+    select THR_EQUIPMENT_SEQ.nextval
+        , t.pk
+        , t.c1
+        , 'adminvaude'
+        , sysdate
+        , 0
+    from tmp_cnv4 t
+    
+     =======================================================++++++++++++===================================
+
+insert into thr_emp_equipment
+        (   pk
+            ,THR_EMP_PK
+            ,THR_EQUIPMENT_PK
+            ,TCO_ORG_PK            
+            ,UNIT_PRICE
+            ,RECEIVED_QTY
+            ,METHOD_TYPE
+            ,DEPOSIT_AMT
+            ,VALID_FROM_DT
+            ,VALID_TO_DT
+            ,EQU_CODE_DETAIL -- ma thiet bi
+            
+            ,RETURN_QTY
+            ,RETURN_AMT
+            ,DEL_IF
+            ,CRT_DT
+            ,CRT_BY
+        
+        )
+        select THR_EMP_EQUIPMENT_SEQ.nextval
+                ,e.pk
+                ,q.pk
+                ,E.TCO_ORG_PK
+                ,T.C10
+                ,t.c6
+                ,t.c9
+                ,t.c11
+                ,t.c12
+                ,t.c13
+                ,t.c5
+                ,decode(t.c15,'Y',t.c6,0)
+                ,decode(t.c14,'Y',t.c11,0)
+                ,0
+                ,sysdate
+                ,'adminvaude'
+      from tmp_cnv3 t, thr_employee e , thr_equipment q
+      where e.del_if = 0
+      and E.EMP_ID = t.c1
+      and t.c4 = q.EQUIP_NAME
+
+===================================================================================
+
+
+
+
+do du lieu cho dot tuyen dung va ung vien trong form HR.0.8 Candidate Entry
+
+11/13/2018
+
+insert into thr_rec_m (pk, REC_ID, REC_NAME , START_DT, END_DT, STATUS
+                       ,DEL_IF, CRT_DT, CRT_BY
+                       )
+             select thr_rec_m_seq.nextval, 'TD-10/2018', 'TD 10/2018', '20181001', '20181031', '01'
+                        ,0, sysdate, 'adminvaude'
+             from dual
+
+
+
+
+INSERT INTO thr_rec_d (pk
+                    , thr_rec_m_pk 
+                    ,tco_org_pk 
+                    ,pos_type 
+                    ,level_type 
+                    ,rec_qty
+                    ,del_if ,crt_by,crt_dt
+                    )
+              select THR_REC_D_SEQ.nextval
+                    ,m.pk
+                    ,t.c2
+                    ,t.c4
+                    ,t.c6
+                    ,t.c8
+                    ,0, 'adminvaude', sysdate
+              from tmp_cnv4 t, thr_rec_m m
+                where m.del_if = 0
+                and M.REC_ID = t.c1
+
+
+
+                             
+=============================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+select count(*) from  tmp_cnv4 t group  by t.c7
+
+
+
+
+insert into thr_rec_experience(pk,thr_rec_emp_pk, com_nm, start_dt,end_dt, position, duties, salary, reason_left, crt_dt,crt_by,del_if)
+       Select thr_rec_experience_seq.nextval, p_rec_emp_pk, p_com_nm, p_start_dt, p_end_dt, p_position, p_duties, p_salary, p_remark, sysdate,p_crt_by,0
+       from dual;
+       
+       
+       
+       
+       INSERT INTO thr_rec_d (pk
+                    , thr_rec_m_pk 
+                    ,tco_org_pk 
+                    ,pos_type 
+                    ,level_type 
+            --        ,rec_qty
+                    ,del_if ,crt_by,crt_dt
+                    )
+              select THR_REC_D_SEQ.nextval
+                    ,m.pk
+                    ,t.c2
+                    ,t.c4
+                    ,t.c6
+              --      ,t.c8
+                    ,0, 'adminvaude', sysdate
+              from tmp_cnv4 t, thr_rec_m m
+                where m.del_if = 0
+                and M.REC_ID = t.c1
+                             
+--------------------------------------------------------------
+
+         INSERT INTO THR_REC_EMP(PK, CANDIDATE_ID, CANDIDATE_NM
+                                    ,PERMANENT_ADDR, PRESENT_ADDR , DISTRICT
+                                    ,PROVINCE ,BIRTH_DT 
+                                    , PER_ID ,HAND_PHONE
+                                    , REC_ID , REC_NM, THR_REC_M_PK
+                                    , REC_ORG_PK , REC_POS_TYPE, REC_EMP_LEVEL_TYPE
+                                   , CRT_BY, CRT_DT, DEL_IF)   
+                    Select THR_REC_EMP_SEQ.NEXTVAL, t.c9, t.c10
+                                    , t.c11, t.c11, t.c12
+                                    , t.c13, t.c15
+                                    , t.c16, t.c17
+                                    , M.REC_ID, M.REC_NAME, m.pk
+                                    , t.c3, t.c5, t.c19
+                                    , 'adminvaude',SYSDATE,0
+                   from  tmp_cnv4 t, THR_REC_M m
+                   where m.del_if = 0
+                   and M.REC_ID = t.c1
+                   ;
+                   
+                   
+                   
+                   select *  from THR_REC_EMP--  tmp_cnv4 t
+       
+       
+       
+       select f_sequence('VAUDE') from dual
+
+
+
+select t.c1, t.c3, t.c4, t.c5, count(*) from tmp_cnv3 t
+    group by t.c1, t.c3, t.c4, t.c5
+    
+    
+    
+select * from tmp_cnv3 t
+
+
+
+
+select t.c7, count(*) from tmp_cnv4 t
+    group by t.c7
+    
+    
+    
+select t.c7, t.c8, t.c9, t.c10, t.c11, t.c12, t.c13, t.c14, t.c15, count(*) from tmp_cnv3 t
+    group by t.c7, t.c8, t.c9, t.c10, t.c11, t.c12, t.c13, t.c14, t.c15
+
+
+
+---------------------------------------------------------
+
+
+ insert into thr_rec_experience(pk,thr_rec_emp_pk, com_nm, start_dt,end_dt
+                                , position, duties, salary, reason_left
+                                , crt_dt,crt_by,del_if)
+       Select thr_rec_experience_seq.nextval, e.pk, t.c18, t.c19, t.c20, t.c21, t.c22, t.c23, t.c24, sysdate,'adminvaude',0
+       from tmp_cnv3 t, thr_rec_emp e
+        where e.del_if = 0
+            and E.CANDIDATE_ID = t.c9;
+       
+       
+       
+       
+       
+       select * from tmp_cnv3
+
+
+
+insert into thr_rec_experience(pk,thr_rec_emp_pk, com_nm, start_dt,end_dt
+                                , position, duties, salary, reason_left
+                                , crt_dt,crt_by,del_if)
+       Select thr_rec_experience_seq.nextval, e.pk, t.c19, t.c20, t.c21, t.c22, t.c23, t.c24, t.c25, sysdate,'adminvaude',0
+       from tmp_cnv3 t, thr_rec_emp e
+        where e.del_if = 0
+            and E.CANDIDATE_ID = t.c10;
+       
+       
+       
+       
+       
+       select * from tmp_cnv3
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+INSERT INTO THR_REC_EMP(PK , REC_ORG_PK , REC_POS_TYPE, REC_EMP_LEVEL_TYPE
+                         ,CANDIDATE_ID, CANDIDATE_NM, PERMANENT_ADDR, PRESENT_ADDR 
+                         , DISTRICT, PROVINCE ,BIRTH_DT, PER_ID 
+                         ,HAND_PHONE, REC_ID , REC_NM, THR_REC_M_PK
+                          , CRT_BY, CRT_DT, DEL_IF)   
+                    Select THR_REC_EMP_SEQ.NEXTVAL, k.n1, k.n2, k.n3
+                           , k.n4, k.n5, k.n6, k.n6, k.n7
+                           , k.n8, k.n9, k.n10, k.n11
+                           , M.REC_ID, M.REC_NAME, m.pk
+                          , 'adminvaude',SYSDATE,0
+                   from   THR_REC_M m, (select n.t0 n0, n.t1 n1, n.t2 n2, n.t3 n3, n.t4 n4, n.t5 n5, n.t6 n6, n.t7 n7, n.t8 n8, n.t9 n9, n.t10 n10, n.t11 n11, count(*)
+                                                from (select t.c1 t0, t.c3 t1,t.c5 t2, t.c7 t3, t.c10 t4, t.c11 t5, t.c12 t6, t.c13 t7,t.c14 t8,t.c16 t9, t.c17 t10 , t.c18 t11
+                                                           from tmp_cnv3 t 
+                                                                group by t.c1, t.c3,t.c5, t.c7, t.c10, t.c11, t.c12, t.c13, t.c14, t.c16, t.c17,t.c18) n 
+                                                group by n.t0, n.t1, n.t2, n.t3, n.t4, n.t5, n.t6, n.t7, n.t8, n.t9, n.t10, n.t11) k
+                   where m.del_if = 0
+                   and M.REC_ID = k.n0
+                   ;
+                   
+
+============================================================================================================================
+
+
+
+
+
+ SELECT thr_rec_request_criteria_seq.NEXTVAL INTO l_rec_request_criteria_pk FROM DUAL;
+
+
+      INSERT INTO thr_rec_d_criterial (pk ,thr_rec_m_pk ,thr_rec_d_pk ,level_type ,pos_type 
+                                        ,cri_type ,cri_description 
+                                        ,mandatory_yn 
+                                        ,description
+                                        ,del_if ,crt_by,crt_dt
+                                      )
+           select l_rec_request_criteria_pk ,p_rec_m_pk ,p_rec_d_pk ,p_emp_level ,p_pos 
+                                        ,p_criteria, p_criDescript 
+                                        ,DECODE (p_mandatory, '-1', 'Y', 'N') 
+                                        ,p_description
+                                        ,0, p_crt_by, sysdate
+                               from dual 
+--                               where not exists (select 1 from thr_rec_d_criterial a
+--                                                where A.THR_REC_D_PK = p_rec_d_pk
+--                                                   and A.CRI_TYPE = p_criteria
+--                                )
+                                ;
+
+
+
+
+---------------------------------------------------------------------
+      select t.c1, t.c2, t.c3, t.c4, t.c5, t.c6, t.c7, t.c8 from tmp_cnv3 t
+    group by t.c1, t.c2, t.c3, t.c4, t.c5, t.c6, t.c7, t.c8
+    
+    
+    
+    select * from thr_rec_m m, (select t.c1 c1, t.c2 c2, t.c3 c3, t.c4 c4, t.c5 c5, t.c6 c6, t.c7 c7, t.c8 c8 from tmp_cnv3 t
+    group by t.c1, t.c2, t.c3, t.c4, t.c5, t.c6, t.c7, t.c8) t
+                where m.del_if = 0
+                and M.REC_ID = t.c1
+--                and d.THR_REC_M_PK = m.pk
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+---  attach file cho vaude
+
+select f.pk, f.filename,
+                 substr(substr(f.filename,instr(f.filename,'\',-1)+1),0,7),
+                 f.filesize,
+                 to_char(f.crt_dt, 'dd/mm/yyyy') crt_dt,
+                 f.crt_by,
+                 f.thr_emp_pk
+        from tc_fsbinary f
+        where f.del_if = 0 
+--        and f.pk = p_pk
+        and F.THR_EMP_PK = '10684'
+        
+        
+        
+        
+ ---------------------------------------------------------------
+ 
+ 
+ 
+ update tc_fsbinary f
+    set f.thr_emp_pk = ( select e.pk from thr_employee e 
+                                    where E.EMP_ID = substr(substr(f.filename,instr(f.filename,'\',-1)+1),0,7))
+       , F.EMP_ID = substr(substr(f.filename,instr(f.filename,'\',-1)+1),0,7)
+where f.del_if = 0
+and f.thr_emp_pk ='10684'
+
+
+
+
+---------------------------------------
+
+
+
+
+select * -- max(pk)
+from tc_fsbinary f
+where f.del_if = 0
+--and f.pk = 21918
+order by f.pk desc
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+ insert into thr_pos_level_uprice(pk, group_type, pos_type, level_type, pos_level_nm
+                        ,unit_price, remark, del_if, crt_by, crt_dt)
+        select thr_pos_level_uprice_seq.nextval, t.c2, t.c4, t.c7, t.c6
+                        , t.c8, 'INSERT FROM EXCEL', 0, 'Mr Dung', sysdate
+       from tmp_cnv4 t;
+       
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+update some_table s
+set   (s.col1, s.col2) = (select x.col1, x.col2
+                          from   other_table x
+                          where  x.key_value = s.key_value
+                         )
+where exists             (select 1
+                          from   other_table x
+                          where  x.key_value = s.key_value
+                         )
+
+
+-------------------------------------------------------------------------------- update HPDQ 20181217
+update thr_employee e
+    set ( E.BIRTH_DT, E.sex, E.ETHNIC_TYPE , E.JOB_TYPE, E.POS_TYPE, E.THR_WG_PK,E.TCO_ORG_PK, E.PLACE_BIRTH, E.NATIVE_COUNTRY
+          , e.PER_ADDR_NO, e.PER_ADDR_WARD, e.PER_ADDR_DISTRICT, e.PER_ADDR_CITY
+          , e.CUR_ADDR_NO, e.CUR_ADDR_WARD, e.CUR_ADDR_DISTRICT, e.CUR_ADDR_CITY
+          , E.EDU_TYPE
+          , E.MOD_DT, E.MOD_BY, E.REMARK
+         )             = (select  t.c3, t.c6, t.c8, t.c10, t.c12, t.c15, t.c20 , trim(t.c26), trim(t.c30)
+                                    , t.c31, t.c33, t.c35, t.c37
+                                    , t.c39, t.c41, t.c43, t.c45
+                                    , t.c61
+                                    , sysdate, 'Mr.Dung TV', 'UPDATE EMPLOYEE INFORMATION'
+                            from tmp_cnv t
+                            where upper(t.c1) = Upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(E.EMP_ID));
+    
+--       and E.EMP_ID = 'HPDQ01848'
+--
+--          
+         
+          
+          
+--
+--select  count(*) from tmp_cnv t
+--where t.c3 is not null
+
+
+Select count (*) , A.PER_ADDR_1
+from thr_employee a
+where a.del_if = 0
+and Upper(a.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(a.EMP_ID))
+
+---------------------+++++++++++++++++++++_--------------------
+update thr_employee e
+    set ( E.JOIN_DT--, E.BEGIN_PROBATION, e.END_PROBATION, e.CONTRACT_TYPE, e.BEGIN_CONTRACT
+                 , E.MOD_DT, E.MOD_BY, E.REMARK
+         )             = (select  nvl(t.c92, t.c94)--, t.c92, t.c93, t.c96, t.c97   -- nvl(t.c92, t.c94) neu khong co ngay thu viec thi lay ngay tiep nhan -> join_dt
+                                    , sysdate, 'Mr.Dung TV', 'UPDATE EMPLOYEE INFORMATION'
+                            from tmp_cnv t
+                            where upper(t.c1) = Upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(E.EMP_ID));
+                            
+                            
+                            
+--          A.CONTRACT_TYPE,
+--          A.CONTRACT_NO,
+--          A.BEGIN_CONTRACT,
+--          A.END_CONTRACT,
+--          A.BANK_TYPE,
+--          A.BANK_BRANCH,
+--------------------------------------------------------------------------------------
+
+-- vo chong
+
+INSERT INTO thr_family f (pk,  thr_employee_pk,  full_name, relation,  birth_dt,
+                                   job,  address,  depend_yn, NATION,
+                                   crt_dt,
+                                   crt_by,
+                                   del_if                                  
+                                   ,remark)
+                 select  thr_family_seq.NEXTVAL,  e.pk, t.c6,  t.c9, t.c7 ,                         
+                           t.c10, t.c11, 'Y','01',
+                           SYSDATE,
+                           'Mr Dung TV',
+                           0,
+                           'IMPORT FAMILY'
+                    from tmp_cnv t, thr_employee e
+                    where e.del_if = 0
+                    and trim(t.c1) = E.EMP_ID
+                    and t.c6 is not null
+
+
+
+-- con cai
+
+ INSERT INTO thr_family f (pk,  thr_employee_pk,  full_name, relation,  birth_dt,
+                                     depend_yn, NATION,
+                                   crt_dt,
+                                   crt_by,
+                                   del_if                                  
+                                   ,remark)
+                 select  thr_family_seq.NEXTVAL,  e.pk, t.c20,  t.c13, t.c21 ,                         
+                            'Y','01',
+                           SYSDATE,
+                           'Mr Dung TV',
+                           0,
+                           'IMPORT FAMILY'
+                    from tmp_cnv t, thr_employee e
+                    where e.del_if = 0
+                    and trim(t.c1) = E.EMP_ID
+                    and t.c20 is not null
+
+-- ten bo
+
+ INSERT INTO thr_family f (pk,  thr_employee_pk,  full_name, relation,  birth_dt,
+                                     depend_yn, NATION,
+                                   crt_dt,
+                                   crt_by,
+                                   del_if                                  
+                                   ,remark)
+                 select  thr_family_seq.NEXTVAL,  e.pk, t.c3,  t.c5, t.c4 ,                         
+                            'Y','01',
+                           SYSDATE,
+                           'Mr Dung TV',
+                           0,
+                           'IMPORT FAMILY'
+                    from tmp_cnv t, thr_employee e
+                    where e.del_if = 0
+                    and trim(t.c1) = E.EMP_ID
+                    and t.c2 is not null
+
+
+-- ten me
+
+ INSERT INTO thr_family f (pk,  thr_employee_pk,  full_name, relation,  birth_dt,
+                                     depend_yn, NATION,
+                                   crt_dt,
+                                   crt_by,
+                                   del_if                                  
+                                   ,remark)
+                 select  thr_family_seq.NEXTVAL,  e.pk, t.c7,  t.c9, t.c8 ,                         
+                            'Y','01',
+                           SYSDATE,
+                           'Mr Dung TV',
+                           0,
+                           'IMPORT FAMILY'
+                    from tmp_cnv t, thr_employee e
+                    where e.del_if = 0
+                    and trim(t.c1) = E.EMP_ID
+                    and t.c7 is not null
+
+
+----------------------------------------------------------------------------
+
+-- hon nhan
+update thr_employee e
+    set (  E.MARRIED_YN
+         )             = (select  t.c4
+                            from tmp_cnv t
+                            where upper(t.c1) = Upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(E.EMP_ID));
+
+----------------------------------------------------------------------------------
+update thr_employee e
+    set ( e.PERMANENT_ADDR, e.PRESENT_ADDR, JOIN_GROUP_DT -- them ngay vao tap doan o day
+                 , E.MOD_DT, E.MOD_BY, E.REMARK
+         )             = (select  t.c38, t.c46 ,  -- coi lai cot
+                                    , sysdate, 'Mr.Dung TV', 'UPDATE EMPLOYEE INFORMATION'
+                            from tmp_cnv t
+                            where upper(t.c1) = Upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(E.EMP_ID));
+
+
+
+update thr_employee e
+    set ( e.PERMANENT_ADDR, e.PRESENT_ADDR, e.JOIN_GROUP_DT -- them ngay vao tap doan o day
+                 , E.MOD_DT, E.MOD_BY, E.REMARK
+         )             = (select  t.c38, t.c46, t.c86  -- coi lai cot
+                                    , sysdate, 'Mr.Dung TV', 'UPDATE EMPLOYEE INFORMATION'
+                            from tmp_cnv t
+                            where upper(t.c1) = Upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where upper(b.c1) = Upper(E.EMP_ID));
+
+-- 20190323
+update thr_employee e
+set (E.BIRTH_ADDR_WARD, E.BIRTH_ADDR_DISTRICT, E.BIRTH_ADDR_CITY,  E.NATIVE_ADDR_WARD,E.NATIVE_ADDR_DISTRICT, E.NATIVE_ADDR_CITY
+        ,e.remark) = 
+            (select t.c18, t.c19, t.c20, t.c22, t.c23, t.c24 , E.REMARK || '* MR Dung TV 20190323: UPDATE NoiSinh Que Quan'
+                from tmp_cnv t
+                where trim(t.c1) = E.EMP_ID)
+      where e.del_if = 0
+      and e.pk in (
+            select a.pk from thr_employee a, tmp_cnv t
+                where trim(t.c1) = a.EMP_ID
+      )
+      
+-------------------------------------------
+
+select * from thr_emp_edu
+;
+
+ insert into thr_emp_edu(pk, thr_emp_pk         , e_name, major, mode_study, SCHOOL_ADDRESS, MAJOR_CODE
+                    ,result, cefr_no, cefr_book
+                        , cefr_date
+                        , del_if, crt_dt, crt_by)
+           Select thr_emp_edu_seq.nextval, e.pk, t.c68, t.c63, t.c64        , t.c70         , t.c71
+                    , t.c62, t.c65, t.c67
+                    , t.c66
+                    , 0,sysdate, 'Mr Dung TV'
+           From tmp_cnv t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           and t.c68 is not null
+           ;
+     
+ 
+ -- trinh do chuyen mon 2  --- thr_emp_pk, e_name
+
+ insert into thr_emp_edu(pk, thr_emp_pk         , e_name, major, mode_study , SCHOOL_ADDRESS, MAJOR_CODE, SCHOOL_CODE
+                    ,result, cefr_no, cefr_book, CEFR_INFORMATICS, OTHER_LANG, OTHER_CEFR
+                        , cefr_date
+                        , del_if, crt_dt, crt_by)
+           Select thr_emp_edu_seq.nextval, e.pk, t.c78, t.c73,   t.c74      , t.c81         , t.c82         , t.c79
+                    , t.c72, t.c75, t.c77      , t.c83          , t.c84         , t.c85
+                    ,t.c76
+                    , 0,sysdate, 'Mr Dung TV'
+           From tmp_cnv t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+            and t.c78 is not null
+------------------------------------------------------------------------------------
+
+chua do, duties, 6 cot dia chi
+
+-- experience
+
+ insert into thr_experience(pk,thr_employee_pk, com_nm, start_dt,end_dt, position, com_group, crt_dt,crt_by,del_if, remark)
+       Select thr_experience_seq.nextval, e.pk, t.c5, t.c3, t.c4, t.c6, t.c8, sysdate,'MR Dung TV',0
+                , 'INSERT BY IMPORT EXCELL'
+         From tmp_cnv t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           ;
+           
+   insert into thr_experience(pk,thr_employee_pk,qty_epxp_year, com_nm, com_group, crt_dt,crt_by,del_if, remark)
+       Select thr_experience_seq.nextval, e.pk, t.c9, t.c10, t.c11, sysdate,'MR Dung TV',0
+                , 'INSERT BY IMPORT EXCELL'
+         From tmp_cnv t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           and t.c10 is not null
+           ;
+           
+     insert into thr_experience(pk,thr_employee_pk,qty_epxp_year, com_nm, com_group, crt_dt,crt_by,del_if, remark)
+       Select thr_experience_seq.nextval, e.pk, t.c12, t.c13, t.c14, sysdate,'MR Dung TV',0
+                , 'INSERT BY IMPORT EXCELL'
+         From tmp_cnv t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           and t.c12 is not null
+           ;
+
+------------------------------------------------------------------------------------------------------------------------- chua duoc, hieu contract_no
+--  chua do
+insert into thr_labour_contract
+                        ( pk, thr_employee_pk, begin_probation,  end_probation, begin_contract,
+                             contract_type,
+                            del_if,crt_by, crt_dt,remark,
+                            prob_type,
+                            pos_type,
+                            job_type
+                        )
+            select     thr_labour_contract_seq.nextval, e.pk,  t.c92, t.c93, t.c97,
+                        t.c96,
+                       0, 'MR Dung TV', sysdate, 'IMPORT FROM EXCELL',
+                       T.C91,
+                       E.POS_TYPE,
+                       E.JOB_TYPE
+             from tmp_cnv t, thr_employee e
+                where e.del_if = 0
+                and upper(E.EMP_ID) = upper(trim(t.c1))
+----------------------------------------------------
+
+
+insert into THR_DISCIPLINE
+                        ( pk, THR_EMP_PK, KIND, DIS_DT, REASON ,AMOUNT,
+                           START_DT,
+                            del_if,crt_by, crt_dt,remark
+                           
+                        )
+           select     thr_labour_contract_seq.nextval, 6156,'01',  '20180108', 'Có hành d?ng dung c?m c?u tài x? b? tai n?n t?i di?m sau d?i núi Sáo', 2000000,
+                         '20171227',
+                       0, 'MR Dung TV', sysdate, 'IMPORT FROM EXCELL'
+                   from dual  
+--             from tmp_cnv1 t, thr_employee e
+--                where e.del_if = 0
+--                and upper(E.EMP_ID) = upper(trim(t.c1))
+                
+
+
+
+
+
+             select     thr_discipline_seq.nextval, e.pk,t.c2,  t.c3, t.c5, substr(t.c6, -1), t.c7,
+                       0, 'MR Dung TV', sysdate, 'IMPORT FROM EXCELL'
+                   from tmp_cnv t, thr_employee e
+                   where e.del_if = 0
+                   and upper(E.EMP_ID) = upper(trim( T.C1))
+                   
+
+
+
+insert into THR_DISCIPLINE ( pk, THR_EMP_PK, DIS_DT, REASON, TREAT_DISC, times, DESCRIPTION,
+                            del_if,crt_by, crt_dt,remark
+                        )
+           select     thr_discipline_seq.nextval, e.pk,t.c2,  t.c3, t.c5, 0||substr(t.c6, -1), t.c7,
+                       0, 'MR Dung TV', sysdate, 'IMPORT FROM EXCELL'
+                   from tmp_cnv t, thr_employee e
+                   where e.del_if = 0
+                   and upper(E.EMP_ID) = upper(trim( T.C1))
+                   
+
+              
+--        select * from tmp_cnv1        
+--                
+--       SELECT '0', A.PK AS EMP_PK
+--            --, B.ORG_NM, C.WORKGROUP_NM
+--            , (SELECT   MAX(T.ORG_NM)  FROM TCO_ORG T  WHERE T.DEL_IF = 0  AND T.ORG_TYPE IN('06') START WITH T.PK=A.TCO_ORG_PK  CONNECT BY PRIOR T.P_PK=T.PK) AS ORG_NM,
+--                    B.ORG_NM AS TEAM
+--                    , A.EMP_ID, A.FULL_NAME
+--                    ,d.decide_no, -- chua co
+--                D.KIND AS DIS_KIND,
+--                D.START_DT AS START_DT, D.END_DT AS END_DT,
+--                D.TREAT_DISC,
+--                (select decode(p_lang,'ENG',H.CODE_NM,H.CODE_FNM) from vhr_hr_code h where H.ID = 'HR0149' and H.CODE = d.treat_disc), 
+--                D.AMOUNT, D.REASON,D.TIMES,
+--                D.DESCRIPTION AS DESCRIPTION, D.PK AS PK
+--                
+--                
+--                
+--                
+--   
+
+
+--------------------------------------------------- 20190508 -----HPDQ-----------------------------------------          
+select * from tmp_cnv t
+where length(t.c8) > 100
+
+
+select * from THR_DISCIPLINE a
+where a.del_if = 0
+and A.CRT_BY = 'MR Dung TV'
+
+--
+--update THR_DISCIPLINE a
+--    set A.DEL_IF = a.pk
+--where a.del_if = 0
+--and A.CRT_BY = 'MR Dung TV'
+--
+--delete THR_DISCIPLINE a
+--where a.del_if = 0
+--and A.CRT_BY = 'MR Dung TV'
+
+
+
+insert into THR_DISCIPLINE ( pk                 , THR_EMP_PK, DIS_DT, REASON, TREAT_DISC, times, DESCRIPTION, LEVEL_VIOLATE,
+                            del_if,crt_by, crt_dt,remark
+                        )
+           select     thr_discipline_seq.nextval, e.pk      ,t.c2   ,  t.c3, t.c5       , t.c9 , t.c8        , t.c7,
+                       0, 'MR Dung TV', sysdate, 'IMPORT FROM EXCELL'
+                   from tmp_cnv t, thr_employee e
+                   where e.del_if = 0
+                   and upper(E.EMP_ID) = upper(trim( T.C1))
+
+
+---------------------------------------------------------------------------------------
+
+
+ ----- 20190323 --------------------------------------------------------------------------------
+ insert into thr_emp_edu(pk, thr_emp_pk         , e_name, major, mode_study, SCHOOL_ADDRESS, MAJOR_CODE
+                    ,result, cefr_no, cefr_book
+                        , cefr_date
+                        , del_if, crt_dt, crt_by)
+           Select thr_emp_edu_seq.nextval, e.pk, t.c56, t.c51, t.c52        , t.c57         , t.c58
+                    , t.c50, t.c53, t.c55
+                    , to_char(to_date(t.c54, 'dd/mm/yyyy'),'yyyymmdd')
+                    , 0,sysdate, 'Mr Dung TV'  -- , to_date(t.c54, 'dd/mm/yyyy')
+           From tmp_cnv1 t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           and t.c51 is not null
+           ;
+       
+select * from tmp_cnv1 ;
+--
+Select thr_emp_edu_seq.nextval, e.pk, t.c56, t.c51, t.c52        , t.c57         , t.c58
+                    , t.c50, t.c53, t.c55
+                    , substr(t.c54, 7,4) || substr(t.c54, 4,2)||substr(t.c54, 0,2)
+                    , 0,sysdate, 'Mr Dung TV'   , to_char(to_date(t.c54, 'dd/mm/yyyy'),'yyyymmdd')
+           From tmp_cnv1 t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+           and t.c51 is not null
+;
+ insert into thr_emp_edu(pk, thr_emp_pk         , e_name, major, mode_study , SCHOOL_ADDRESS, MAJOR_CODE, SCHOOL_CODE
+                    ,result, cefr_no, cefr_book, CEFR_INFORMATICS, OTHER_LANG , OTHER_CEFR
+                        , cefr_date
+                        , del_if, crt_dt, crt_by)
+           Select thr_emp_edu_seq.nextval, e.pk, t.c65, t.c60,   t.c61      , t.c67         , t.c68         , t.c66
+                    , t.c59, t.c62, t.c64      , t.c69          , t.c70         , t.c71
+--                    ,t.c63
+                    , to_char(to_date(t.c63, 'dd/mm/yyyy'),'yyyymmdd')
+--                    , substr(t.c63, 7,4) || substr(t.c63, 4,2)||substr(t.c63, 0,2)
+                    , 0,sysdate, 'Mr Dung TV'
+           From tmp_cnv1 t, thr_employee e
+           where e.del_if = 0
+           and trim(upper(t.c1)) = trim(upper(E.EMP_ID))
+            and t.c60 is not null
+            
+;            
+select count(*) from thr_emp_edu
+;
+
+update  thr_emp_edu a
+set (a.times) = 1
+where A.DEL_IF = 0
+and A.CRT_BY = 'Mr Dung TV'
+;
+
+update  thr_emp_edu a
+set (a.times) = 2
+where A.DEL_IF = 0
+and A.CRT_BY = 'Mr Dung TV'
+and exists (select 1 from tmp_cnv1 b, thr_employee e
+                    where e.del_if = 0
+                    and b.c60 is not null
+                    and b.c51 = A.MAJOR
+                    and trim(b.c1) = E.EMP_ID
+                    and a.thr_emp_pk = e.pk
+                 )
+;
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+thr_title_emp
+
+LS_HR_SEL_HREM00100_1
+
+
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Household Name1' , 'Tên ch? h? 1' , null     , null,      'DungTV', sysdate, 0,  'a.household_name1' , 133,     'a.household_name1', 116 
+--    from dual;
+    
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Birth Date Household 1' , 'Ngày sinh ch? h? 1' , null     , null,      'DungTV', sysdate, 0,  'a.household_birth_dt1' , 134,     'a.household_birth_dt1', 117
+--    from dual;
+
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Relation Household 1' , 'M?i quan h? ch? h? 1' , null     , null,      'DungTV', sysdate, 0,  'sf_get_hr_common_code(a.household_relation_type1,''HR0024'',a.tco_company_pk)' , 135,     'sf_get_hr_common_code(a.household_relation_type1,''HR0024'',a.tco_company_pk)', 118
+--    from dual;
+
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Household Name2' , 'Tên ch? h? 2' , null     , null,      'DungTV', sysdate, 0,  'a.household_name2' , 136,     'a.household_name2', 119 
+--    from dual;
+--    
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Birth Date Household 2' , 'Ngày sinh ch? h? 2' , null     , null,      'DungTV', sysdate, 0,  'a.household_birth_dt2' , 137,     'a.household_birth_dt2', 120
+--    from dual;
+--
+--insert into thr_title_emp
+--(PK                             , TITLE_NM          , TITLE_FNM     , TITLE_KNM, TITLE_SQL, CRT_BY, CRT_DT, DEL_IF, TITLE_FIELD         , COLUMN_NUM, TITLE_FIELD_FNM, SEQ )
+--select thr_title_emp_seq.nextval, 'Relation Household 2' , 'M?i quan h? ch? h? 2' , null     , null,      'DungTV', sysdate, 0,  'sf_get_hr_common_code(a.household_relation_type2,''HR0024'',a.tco_company_pk)' , 138,     'sf_get_hr_common_code(a.household_relation_type2,''HR0024'',a.tco_company_pk)', 121
+--    from dual;
+
+--------------------------------------------------------------------------------------------------------------------------------------

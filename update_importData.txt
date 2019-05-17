@@ -1,0 +1,198 @@
+update thr_family k
+  set k.depend_yn = 'Y' 
+      ,K.REMARK = 'update depend_yn = Y'
+      ,k.MOD_BY = 'Mr Dung'
+      ,k.MOD_DT = sysdate 
+  where exists (select 1 
+                    from tmp_cnv2 t, thr_employee e
+                            where T.C1 = E.EMP_ID
+                            and k.THR_EMPLOYEE_PK = e.pk
+                            and upper(trim(k.FULL_NAME)) = upper(trim(t.c10)) 
+                            )           
+      
+
+
+
+
+
+INSERT INTO thr_family f
+                  (pk, thr_employee_pk, full_name,
+                   relation, birth_dt,depend_yn,start_dt
+                   , crt_dt, crt_by, del_if
+                  )
+         select thr_family_seq.NEXTVAL,f.e_pk, F.r_fullname
+                    , f.relation, f.birthday, 'Y', f.start_dt
+                    , sysdate, 'Mr.Dung instert', 0
+                    from (select e.pk as e_pk, t.c1 as emp_id, t.c3 as e_fullname, t.c10 as r_fullname, initcap(t.c11) as relation, t.c13 as birthday, t.c14 as start_dt
+                                            from tmp_cnv2 t, thr_employee e
+                                            where T.C1 = E.EMP_ID
+                                            
+                                            )  f
+                       where not exists (select 1 from thr_family d
+                                             where d.del_if = 0
+                                             and d.THR_EMPLOYEE_PK = f.e_pk
+                                            and upper(trim(d.FULL_NAME)) = upper(trim(f.r_fullname ))
+                                            )
+             and f.r_fullname is not null
+
+
+
+-------------------------------------------------------------
+
+
+--
+--create table thr_employee_bk_dung as select * from thr_employee
+--
+--select * from thr_employee_bk_dung
+--
+--
+--update thr_employee e
+--    set (E.TCO_ORG_PK, )
+select E.EMP_ID, E.TCO_ORG_PK, E.THR_WG_PK from thr_employee e where E.EMP_ID = 'HPDQ00001'
+
+update thr_employee e
+    set (  E.TCO_ORG_PK, E.THR_WG_PK
+         )             = (select  t.c117, T.C120
+                            from tmp_cnv t
+                            where t.pk = e.pk)
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where b.pk = e.pk)
+
+------------------------------------------------
+
+
+hpdq -- bo co phu thuoc
+
+select * from thr_family f where f.del_if = 0 and F.CRT_BY = 'Mr Dung TV'
+
+
+update thr_family f
+ set f.depend_yn = ''
+ where f.del_if = 0 and F.CRT_BY = 'Mr Dung TV'
+
+
+select e.emp_id, e.PROB_TYPE from thr_employee e
+where e.DEL_IF  = 0
+and e.PROB_TYPE is  null
+and e.BEGIN_PROBATION is not null
+and e.END_PROBATION is  null
+
+
+---- thr_employee_backup -- 
+
+update thr_employee e
+set e.PROB_TYPE = '03',
+ E.BEGIN_PROBATION = E.join_dt
+ ,E.END_PROBATION = E.join_dt
+ , e.remark = e.remark || ' * MR DUNG TV- UPDATE BEGIN, END PROBATION' 
+ , E.MOD_DT = sysdate
+where e.del_if = 0
+and e.PROB_TYPE is null
+and e.BEGIN_PROBATION is not null
+and e.END_PROBATION is  null
+
+
+---  update short name for absence table
+
+update thr_absence a
+    set A.SHORT_NM = (select v.char_1 from vhr_hr_code v where v.id='HR0003' and v.code = a.absence_type)
+        , A.REMARK = A.REMARK || '* UPDATE SHORT_NM BY HAND'
+        , A.MOD_BY = 'Mr Dung TV'
+        , A.MOD_DT = sysdate
+  where a.del_if = 0
+        and a.ABSENCE_DT  between '20190301' and '20190331'
+        and a.SHORT_NM is null
+
+------------------------------------------------------------------
+
+update thr_code_detail a
+         set (
+             a.num_1, a.char_2  
+             ) =   (select t.c5, t.c11 from tmp_cnv t where t.c1 = a.code)        
+       where a.del_if = 0 and a.thr_code_master_pk = 53
+       ;
+       
+       
+select  *
+    FROM thr_code_detail A, tmp_cnv t
+    WHERE A.DEL_IF=0 AND 53=A.thr_code_master_pk 
+        and A.CODE = T.C1
+        
+select  *
+    FROM thr_code_detail A
+    WHERE A.DEL_IF=0 AND 53=A.thr_code_master_pk 
+    and a.code = '1'
+
+--------------------------------------------------------------------------------
+
+update thr_employee e
+    set (  E.job_type
+         )             = (select  t.c4
+                            from tmp_cnv t
+                            where Upper(t.c1) = upper(E.EMP_ID))
+    where E.DEL_IF = 0
+    and Upper(e.emp_id) IN (Select b.c1 
+                            from tmp_cnv b 
+                            where Upper(b.c1) = upper(E.EMP_ID))
+                            
+                            
+select * from tmp_cnv t, thr_employee e
+where e.del_if = 0
+    and Upper(e.emp_id) = E.EMP_ID
+
+
+
+select e.pk, A.MAJOR_CODE,  A.RESULT from thr_emp_edu a, thr_employee e
+where a.del_if = 0 and e.del_if = 0
+and A.THR_EMP_PK = e.pk
+and E.EMP_ID = 'HPDQ00001'
+--and A.MAJOR_CODE = '01'
+--
+--update  thr_emp_edu a
+--    set a.MAJOR_CODE = (select v.code from vhr_hr_code v where v.id = 'HR0274' and A.MAJOR_CODE = v.code_nm)
+--where a.del_if = 0
+--and exists (select v.code from vhr_hr_code v where v.id = 'HR0274' and A.MAJOR_CODE = v.code_nm)
+----and A.THR_EMP_PK = 5185
+
+
+--flashback table thr_emp_edu to timestamp to_timestamp('24-04-2019 06:20:04','dd-mm-yyyy hh12:mi:ss');
+--
+--alter table thr_emp_edu enable row movement;
+
+
+select  a.MAJOR_CODE , (select v.code from vhr_hr_code v where v.id = 'HR0274' and A.MAJOR_CODE = v.code_nm) 
+from thr_emp_edu a
+where a.del_if = 0
+--and A.THR_EMP_PK = 5185
+
+
+
+--update  thr_emp_edu a
+--    set A.RESULT = (select v.code from vhr_hr_code v where v.id = 'HR0273' and A.RESULT = v.code_nm)
+--where a.del_if = 0
+--and exists (select v.code from vhr_hr_code v where v.id = 'HR0273' and A.RESULT = v.code_nm)
+----and A.THR_EMP_PK = 5185
+
+-- update hrcode ward num_1
+select c.num_1 , c.code_nm from THR_CODE_DETAIL c
+where substr(c.code,0,5) = '50505'
+
+
+select * from tmp_cnv
+
+update THR_CODE_DETAIL a
+set A.NUM_1 = (select t.c5 from tmp_cnv t where a.pk = t.pk)
+where exists (select 1 from tmp_cnv t where a.pk = t.pk)
+
+
+
+------------------ lay lai du lieu da bi xoa tu form HR2.21 Time Daily Gate cua HPDQ , 20190502
+update thr_absence a
+    set a.del_if = 0
+        , A.REMARK = A.REMARK || ' *UPDATE del_if = 0 BY MR.DungTV '
+where a.del_if <> 0
+    and A.REMARK = 'DELETE PROCESS'
+    and A.ABSENCE_DT between '20190401' and '20190430'
+    and A.ABSENCE_TYPE = '13'

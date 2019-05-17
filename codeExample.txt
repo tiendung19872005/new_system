@@ -1,0 +1,232 @@
+string authors = "Mahesh Chand, Henry He, Chris Love, Raj Beniwal, Praveen Kumar";  
+// Split authors separated by a comma followed by space  
+string[] authorsList = authors.Split(", ");  
+
+exSheet.Cells[row_loop - 1, 1, row_temp - 1, 1].Merge = true; // epplus
+exSheet.Range[1,5, 1, col_index-5 ].Merge(true); // merge "VAUDE VIETNAM"  
+
+exSheet.Range[10, col_index + 2,10,col_index + 7].Copy(exSheet.Range[10, col_index - 5,10,col_index ], XlPasteType.xlPasteAll); // copy Tong gd cells  copy native excel
+		
+
+			string date_ = dt_emp.Rows[0][0].ToString();
+			// Split authors separated by a comma followed by space  
+			string[] date_List = date_.Split('/');  
+			exSheet.Cells["A4"].Value = "Ngay " + date_List[0] + " thang " + date_List[1] +" nam " + date_List[2];
+
+
+function checktimehhmm(obj)
+{
+
+	var string = obj.text;
+	var re = new RegExp("^[0-2][0-9]:[0-5][0-9]$");
+	if (!re.test(string)) 
+	{
+		alert((v_language =="ENG")?"Please input type HH:MM":"Vui lòng ch?n d?nh d?ng theo HH:MM");
+		obj.text = "";
+		obj.GetControl().focus();
+		return;
+	} 
+}
+function OnCheckPoint(obj)
+{
+	alert(test);
+	var string = obj;
+	var re = new RegExp( "^[0-9]+$" );
+	if (!re.test(string)) 
+	{
+		alert((v_language =="ENG")?"Please input number from 1 to 10 !!!n":"Vui nh?p ði?m t? 1 ð?n 10 !!!n");
+		return false;
+	} 
+	else
+	if(Number(string) < 1 || Number(string) > 10)
+	{
+		alert((v_language =="ENG")?"Please input number from 1 to 10 !!!n":"Vui nh?p ði?m t? 1 ð?n 10 !!!n");
+		return false;
+	}
+	
+	return true;
+}
+
+class popup
+var callerWindowObj = dialogArguments; 
+function OnReport()
+{
+    callerWindowObj.OnReport(radType.value)      
+    this.close(); 	
+}
+
+class main
+function OnReport(pos)
+{
+	switch (pos)
+	{		
+		
+		case '1':
+			 var url = System.RootURL;
+				txtReport_tmp.text = "/hpdq/reports/hr/ti/rpt_hrti01600_0.aspx";
+				url = url + txtReport_tmp.text + '?p_lang=' + v_language + '&p_ws=' + lstWS.value + '&p_search_temp=' + txtEmployee.text + '&p_tco_org_pk=' + lstOrg.value ;
+				url = url + '&p_from_date=' + dtFromDate.value + '&p_to_date=' + dtToDate.value + '&p_nation=' + lstNation.value ;
+				url = url + '&p_absence_type=' + lstAbsenceType.value + '&p_conditions=' + lstCondition.value ;
+				window.open(url);
+			 
+		break;
+		case '2':
+			var url = System.RootURL;
+				txtReport_tmp.text = "/hpdq/reports/hr/ti/rpt_hrti01600_1.aspx";
+				url = url + txtReport_tmp.text + '?p_lang=' + v_language + '&p_ws=' + lstWS.value + '&p_search_temp=' + txtEmployee.text + '&p_tco_org_pk=' + lstOrg.value ;
+				url = url + '&p_from_date=' + dtFromDate.value + '&p_to_date=' + dtToDate.value + '&p_nation=' + lstNation.value ;
+				url = url + '&p_absence_type=' + lstAbsenceType.value + '&p_conditions=' + lstCondition.value ;
+				window.open(url);	
+		break;
+	}
+         
+}
+function OnPrint()
+{
+	if(dtFromDate.value != dtToDate.value)
+	{
+		alert("Ngày ph?i trùng!!!");
+		return;
+	}
+	var path = System.RootURL + '/hpdq/forms/hr/ti/hrti01604.aspx';
+	var object = System.OpenModal( path ,400, 300 ,  'resizable:yes;status:yes',this);			
+  
+}
+
+
+
+native excel report --------------------------------------------------
+
+		exSheet.Range[1, dt_header.Rows.Count + 7,2,dt_header.Rows.Count + 10].Copy(exSheet.Range[1, dt_header.Rows.Count + 2,2,dt_header.Rows.Count + 5], XlPasteType.xlPasteAll);
+		exSheet.Range[3, dt_header.Rows.Count + 7,3,dt_header.Rows.Count + 10].Copy(exSheet.Range[3, dt_header.Rows.Count + 2,3,dt_header.Rows.Count + 5], XlPasteType.xlPasteAll);
+		// end insert header
+		//exSheet.Cells[19, 60].Value = col_index;
+		exSheet.Range[1,5, 1, col_index-5 ].Merge(true); // merge "VAUDE VIETNAM"
+		exSheet.Range[2,5, 2, col_index-5 ].Merge(true);	// merge "B?NG ÐÁNH GIÁ NANG L?C"
+		exSheet.Range[10, col_index + 2,10,col_index + 7].Copy(exSheet.Range[10, col_index - 5,10,col_index ], XlPasteType.xlPasteAll); // copy Tong gd cells
+
+-----------------------------------------------------------------------
+
+CREATE OR REPLACE procedure HPDQ.hp_hr_rpt_hrti01600_1
+(  p_lang       varchar2,
+   p_employee   varchar2,
+   p_from       varchar2,
+   p_to         varchar2,
+   p_tco_org_pk varchar2,
+   p_thr_ws_pk  varchar2,
+   p_nation     varchar2,
+   p_conditions    varchar2,
+   p_absence_type varchar2,
+   p_rtn_value    out   sys_refcursor
+) is
+ 
+    
+begin
+       
+       open p_rtn_value for
+       select to_char(to_date(p_from, 'yyyymmdd'), 'dd/mm/yyyy') from_dt,
+              to_char(to_date(p_to, 'yyyymmdd'), 'dd/mm/yyyy') to_dt ,
+              a.emp_id,
+              e.full_name,
+              o.org_nm,
+              a.time_in,
+              case when a.time_in is not null 
+                        and to_date(a.date_in || a.time_in, 'yyyymmddhh24:mi') > to_date(a.work_dt || s.start_time, 'yyyymmddhh24:mi')
+                        then 'Ði mu?n'
+                   when a.time_in is null then 'Không ch?m công' 
+                   else '' end as dimuon,
+              null as tangcasang,
+              a.time_out,
+              case when a.time_out is not null 
+                                  and to_date(a.date_out || a.time_out, 'yyyymmddhh24:mi') 
+                                  < to_date(decode(s.during_day, 2, to_char(to_date(a.work_dt, 'yyyymmdd')+1, 'yyyymmdd'), a.work_dt) || s.end_time, 'yyyymmddhh24:mi')
+                        then 'V? s?m'
+                   when a.time_out is null then 'Không ch?m công' 
+                   else '' end as vesom,
+              null as tangcachieu,  
+              null as ykienxacnhan
+       from thr_work_date a, tco_org o, thr_work_shift s, thr_employee e
+       where a.del_if=0 and o.del_if=0 and s.del_if=0 and e.del_if=0 
+       and a.thr_emp_pk = e.pk
+       and a.tco_org_pk = o.pk
+       and a.thr_ws_pk = s.pk
+       and a.work_dt = p_from
+       and (p_employee is null 
+                     or  (upper(e.emp_id) like  '%' || upper(p_employee)|| '%')
+                     or  (upper(e.old_id ) like  '%' || upper(p_employee)|| '%')
+                     or  (upper(e.full_name) like  '%' || upper(p_employee)|| '%'))
+       and a.tco_org_pk in (
+                          select     g.pk
+                                from tco_org g
+                               where g.del_if = 0
+                          start with g.pk =(case when p_tco_org_pk='ALL' then g.pk else to_number(p_tco_org_pk) end)
+                          connect by prior g.pk = g.p_pk)
+       and decode(p_thr_ws_pk,'ALL','ALL',a.thr_ws_pk)=p_thr_ws_pk
+       and (nvl(round(case when a.time_in is not null and to_date(a.date_in || a.time_in, 'yyyymmddhh24:mi') > to_date(a.work_dt || s.start_time, 'yyyymmddhh24:mi') 
+                        then (to_date(a.date_in || a.time_in, 'yyyymmddhh24:mi') - to_date(a.work_dt || s.start_time, 'yyyymmddhh24:mi'))*24*60
+                   else null end), 0) > 0
+           or nvl(round(case when a.time_out is not null and to_date(a.date_out || a.time_out, 'yyyymmddhh24:mi') 
+                             < to_date(decode(s.during_day, 2, to_char(to_date(a.work_dt, 'yyyymmdd')+1, 'yyyymmdd'), a.work_dt) || s.end_time, 'yyyymmddhh24:mi')
+                        then (to_date(decode(s.during_day, 2, to_char(to_date(a.work_dt, 'yyyymmdd')+1, 'yyyymmdd'), a.work_dt) || s.end_time, 'yyyymmddhh24:mi') 
+                                - to_date(a.date_out || a.time_out, 'yyyymmddhh24:mi'))*24*60
+                   else null end), 0) > 0)
+       order by o.seq, a.work_dt, a.emp_id
+       ;
+        
+   exception
+     when others then
+       -- Consider logging the error and then re-raise
+       raise;
+end ;
+/
+
+
+
+
+
+
+using Spire.Doc;
+
+in function_coding
+
+Document doc = new Document();
+doc.LoadFromFile(@"../../tendoc.doc", FileFormat.Doc);
+String[] datevalues = {String.Foreat("{0:d}",System.DateTime.Now),String.Foreat("{0:d}",System.DateTime.Now),String.Foreat("{0:d}",System.DateTime.Now)};
+String[] fileName = {"word_mailing_word","String.Foreat("{0:d}",System.DateTime.Now)","String.Foreat("{0:d}",System.DateTime.Now)"};
+doc.MailMerge.Execute(fileName ,datevalues);
+doc.SaveToFile(@"../../ddd.doc", FileFormat.Doc);
+System.Diagnostics.Process.Start(@"../../ddd.doc");
+
+
+	----------------------------------------------------------------------------------------------------------------------------
+		grdPlan.itemFormatter = function (panel, r, c, cell) {
+		//	if(c == 2 && r == 2)
+		//	{
+			if(c == 25 )
+			{
+				cell.style.backgroundColor = 'blue';
+			//	cell.style.color = "White";
+			}
+			
+		};
+		
+		---------------------------------------------------------------------------------------------------------------------------
+		
+				grdOrgChart.GetDataSource().forEach(function(item)
+		{
+			data_source.push({ id: item.ID
+					, parentId: item.PARENTID
+					, name: item.NAME
+					, title: item.TITLE
+					, phone: item.PHONE
+					, mail: item.MAIL
+					, adress: item.ADRESS
+					, image: item.IMAGE
+				});
+		});
+		
+		
+		
+		------------------------------------------------------------------------------
+		
+		https://docs.oracle.com/cd/B19306_01/appdev.102/b14258/d_alert.htm#i1001106

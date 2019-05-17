@@ -1,0 +1,333 @@
+select upper(A.FULL_FNAME) from thr_employee a where a.del_if = 0 and A.POS_TYPE = 175  -- tong GD /VAUDE
+select to_char(add_months(to_date('20181231','yyyymmdd'), (select T.VALID_MONTHS from THR_EQUIPMENT t where t.del_if = 0 and t.pk = 6)),'yyyymmdd') from dual  
+
+select f_sequence('VAUDE') FROM DUAL  -- reset sequence cua schema 'VAUDE' -- f_sequence - chi danh cho bang bat dau roi 't'
+
+select regexp_substr('SMITH,ALLEN,WARD,JONES','[^,]+', 1, level) from dual
+ connect by regexp_substr('SMITH,ALLEN,WARD,JONES', '[^,]+', 1, level) is not null;
+
+HR_BUG_STORE  ; shift + F7 ->> chay chi tiet,  Shift + F8 ->> chay tong hop
+
+ SELECT 1
+ FROM dual
+  WHERE REGEXP_LIKE('2','[^2-9]'); '\D'   khong phai so
+
+// dua nhieu dong ve 1 dong du lieu co xuong hang
+
+ (select listagg( a.reason , chr(13)) 
+                            within group (order by A.thr_emp_pk, a.dis_dt)  
+                    from thr_discipline a
+                    where a.del_if = 0
+                        and substr(a.dis_dt, 0,4) = substr(p_from_date, 0,4)
+                        and a.thr_emp_pk = e.pk)
+
+
+-- noi 2 dong du lieu ve 1 dong  
+ select LISTAGG(a.full_name ||  nvl2( a.birth_dt, ' - ' || a.birth_dt, ''), chr(13)) within group (order by a.thr_employee_pk, a.full_name) as ten  
+                                from thr_family a 
+                                where  a.del_if = 0 
+                                and a.relation = '03' 
+                                and  a.thr_employee_pk = 10977
+
+
+
+   SELECT 1
+ FROM dual
+  WHERE REGEXP_LIKE('222345','\d');   '\d' la so
+
+
+hr_sf_get_wt_com             ---  ham tinh toan gio cong cua nhav vien, dang ki gio vang------------------------------
+
+
+select e.pk, e.tco_org_pk, E.CRT_BY, E.CRT_DT from thr_employee_his e
+where e.del_if = 0
+and E.EMP_ID = 'HPDQ06474'
+order by e.pk desc
+
+select * from tco_org o
+where o.del_if = 0
+and o.pk = 10
+
+
+====================================================================================
+					GROUP BY AND DELETE 
+================================== 				=================================
+select a.EMP_LEVEL_TYPE, a.METHOD_TYPE, A.THR_REC_M_PK , count(*)
+        from thr_rec_method a
+    where a.del_if = 0
+   group by a.EMP_LEVEL_TYPE, a.METHOD_TYPE, A.THR_REC_M_PK 
+   having count(*) > 1
+   ;
+  ======================================================================================================
+  and ((p_tco_org_pk  <> 'ALL' and  a.tco_org_pk in (select g.pk
+                                                                    from tco_org g
+                                                                   where g.del_if = 0
+                                                              start with g.pk in ( select regexp_substr(p_tco_org_pk,'[^,]+', 1, level) from dual
+                                                                                    connect by regexp_substr(p_tco_org_pk, '[^,]+', 1, level) is not null )
+                                                          connect by prior g.pk = g.p_pk)) 
+                        or ( p_tco_org_pk  = 'ALL' and  p_hr_level  = '1' 
+                                            and a.tco_org_pk in (select a.pk from tco_org a   
+                                                                      where a.del_if = 0  
+                                                                        AND NVL(A.END_DATE,TO_CHAR(SYSDATE+1,'YYYYMMDD')) >  TO_CHAR(SYSDATE,'YYYYMMDD') 
+                                                                        connect by prior a.pk = a.p_pk  
+                                                                        start with a.pk in (select r.tco_dept_pk from thr_role r where r.del_if=0 and r.user_pk = p_user_pk) 
+                                                        )          
+                        or (p_tco_org_pk  = 'ALL' and p_hr_level  <> '1')))
+    
+   ====================================================================================================== 
+select a.EMP_LEVEL_TYPE,  a.METHOD_TYPE from thr_rec_method a
+    where a.del_if = 0
+    and a.EMP_LEVEL_TYPE is null
+    
+    update thr_rec_method s
+    set s.del_if = s.pk 
+    where s.del_if=0
+    and s.PK not in (select min(a.pk)
+                        from thr_rec_method a
+                    where a.del_if = 0
+                   group by a.EMP_LEVEL_TYPE, a.METHOD_TYPE 
+                   having count(*) > 1)
+    and s.pk not in (select min(a.pk)
+                        from thr_rec_method a
+                    where a.del_if = 0
+                   group by a.EMP_LEVEL_TYPE, a.METHOD_TYPE 
+                   having count(*) = 1)
+  --------------------------------------------------------------------------------------------------------------
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------                 
+        select to_number(substr(nvl(p_start_hours,'00:00'),0,2)) * 60 +  to_number(substr(nvl(p_start_hours, '00:00'),4,2)) into l_start_hours from dual; 
+        select to_number(substr(nvl(p_end_hours, '00:00'),0,2)) * 60 +  to_number(substr(nvl(p_end_hours, '00:00'),4,2)) into l_end_hours from dual;
+        
+        select to_number(substr(nvl(S.START_MEAL1, '00:00'),0,2)) * 60 +  to_number(substr(nvl(S.START_MEAL1,'00:00'),4,2))
+              , to_number(substr(nvl(S.END_MEAL1,'00:00'),0,2)) * 60 +  to_number(substr(nvl(S.END_MEAL1,'00:00'),4,2)) 
+              into l_start_meal 
+                   ,l_end_meal
+                        from thr_employee e, thr_wg_sch_detail d, thr_work_shift s
+                            where e.del_if=0 and d.del_if=0 and s.del_if = 0
+                            and d.thr_emp_pk = e.pk
+                            and d.work_dt between p_from_date and p_to_date
+                            and e.pk = p_thr_emp_pk
+                            and S.PK = D.THR_WS_PK
+                            ;
+        select ( case when  (l_start_hours < l_start_meal) and (l_end_hours > l_end_meal) then 1                                        
+              when  (l_start_hours between l_start_meal and l_end_meal) and (l_end_hours > l_end_meal) then 2                    
+              when  (l_start_hours > l_end_meal) and (l_end_hours > l_end_meal) then 3                    
+              when  (l_start_hours < l_start_meal) and (l_end_hours < l_start_meal) then 4                    
+              when  (l_start_hours < l_start_meal) and (l_end_hours between l_start_meal and l_end_meal) then 5
+              else 0 end
+                ) into l_check_hours from dual
+             ;
+        if l_check_hours = 1 then
+                select l_end_hours - l_start_hours - (l_end_meal - l_start_meal) into l_ab_hours from dual;
+        elsif l_check_hours = 2 then 
+                select l_end_hours - l_end_meal into l_ab_hours from dual;
+        elsif l_check_hours = 3 then 
+                select l_end_hours - l_start_hours into l_ab_hours from dual;
+        elsif l_check_hours = 4 then 
+                select l_end_hours - l_start_hours into l_ab_hours from dual;
+        elsif l_check_hours = 5 then 
+                select l_start_meal - l_start_hours into l_ab_hours from dual;
+        else select 0 into l_ab_hours from dual;
+        end if;
+        
+        
+        l_ab_hours := round(l_ab_hours/60,1);
+     --   l_ab_hours := l_start_meal;
+      
+				
+
+
+ ,  decode(p_abs_time, null, hr_sf_get_wt_com(d.work_dt||p_start_hours, d.work_dt||p_end_hours, d.thr_ws_pk, d.work_dt, nvl(e.tco_company_pk, '99')), p_abs_time)Zz as absence_time                       
+                           
+
+
+
+
+CREATE OR REPLACE TRIGGER VAUDE.TRG_THR_ABSENCE  ---------------------------trigger --------------------------------
+
+
+
+
+-------------------------------------------------------------- insurance
+
+select 
+        decode(ins_type.num_2,1,'Tang', 'Gi?m')
+         ,a.LOAI_BH as LOAI_BH_code     
+         ,(select code_nm  from vhr_hr_code where id='HR0041' and  code = a.LOAI_BH) as LOAI_BH
+        ,ins_type.char_3  as c1 
+        ,a.FULL_NAME as c3  
+        ,a.SO_BHXH as c4  
+--        , o.org_nm || (select code_nm  from vhr_hr_code where id='HR0008' and  code = E.POS_TYPE)
+        , null  as CAP_BAC  --C?p b?c, ch?c v?, ch?c danh ngh?, noi làm vi?c
+        , null  as TIEN_LUONG 
+        , null  as TIEN_LUONG
+        , null  as CV
+        , null  as TN_VK
+        , null  as TN_NGHE  
+        , null  as PC_KHAC
+        , TO_CHAR(TO_DATE(a.TU_THANG,'YYYYMM'),'MM/YYYY') as TU_THANG
+        , a.GHI_CHU
+from THR_INSURANCE_MANAGE a, thr_employee e, tco_org o, (select code,num_1,num_2,CHAr_3,code_fnm from vhr_hr_code where id='HR0041') ins_type 
+where a.del_if=0 and e.del_if=0 
+        and a.thr_emp_pk = e.pk 
+        and A.CHUC_DANH = o.pk
+        and a.LOAI_BH=ins_type.code 
+        and a.THANG_BC='201810' 
+        and a.LAN_BAO='01'   and decode('01', 'ALL', 'ALL', e.nation) ='01' 
+order by ins_type.num_2, ins_type.char_3, ins_type.code_fnm, ins_type.num_1, a.emp_id
+
+----------------------------------------------------------------------------------
+
+ select decode(ins_type.num_2,1,'Tang', 'Gi?m')
+        , ins_type.num_2         
+        , ins_type.CODE_FNM
+        , a.LOAI_BH     
+        , ins_type.code_nm
+        , ins_type.char_3  as c1
+        , E.EMP_ID 
+        , a.FULL_NAME as c3  
+        , (select code_nm  from vhr_hr_code where id='HR0008' and  code = E.POS_TYPE) as position
+        , O.ORG_NM
+        , to_char(to_date(E.JOIN_DT,'yyyymmdd'),'dd/mm/yyyy') as join_dt
+        , to_char(to_date(nvl(max(l.begin_contract), max(l.begin_probation)),'yyyymmdd'),'dd/mm/yyyy') as contract_dt
+        , null as thang_tang_bh
+        , null as muc_luong_dong_bh
+        , null as per_NLÐ 
+        , null as per_NSDLÐ
+        , null as tong
+        , null as ghi_chu
+        from THR_INSURANCE_MANAGE a, thr_employee e, tco_org o
+                    ,thr_labour_contract l
+                    , (select code,num_1,num_2,CHAr_3,code_fnm, code_nm from vhr_hr_code where id='HR0041') ins_type 
+        where a.del_if=0 and e.del_if=0 and l.del_if = 0
+            and a.thr_emp_pk = e.pk 
+            and l.thr_employee_pk = e.pk
+            and a.LOAI_BH=ins_type.code 
+            and o.pk = E.TCO_ORG_PK
+            and a.THANG_BC = '201810' 
+            and a.LAN_BAO = '01' 
+            and decode('01', 'ALL', 'ALL', e.nation) = '01'
+    group by e.emp_id, ins_type.num_2, ins_type.CODE_FNM, a.LOAI_BH, ins_type.code_nm, ins_type.char_3,a.FULL_NAME , E.POS_TYPE ,O.ORG_NM, E.JOIN_DT
+    order by ins_type.num_2, ins_type.code_fnm, ins_type.char_3
+     ;
+
+
+
+
+
+
+ insert into thr_time_meal
+         (pk, id, event, work_dt,
+          time,location, crt_by, crt_dt
+          , full_name, time_full
+          )
+    select thr_time_meal_seq.nextval, t.id, event, t.work_dt
+         , t.time, t.location, t.crt_by, t.crt_dt
+         , t.full_name, t.time_full
+    from thr_time_temp t
+        where  -- T.WORK_DT between '20190312' and '20190313'
+         exists (select 1
+                           from thr_meal_canteen_terminal a
+                           where a.del_if = 0
+                           and a.machine_type = '2'
+                           and a.terminal_id = t.location
+                           )
+       ;
+       
+  delete thr_time_temp t
+        where 
+         exists (select 1
+                   from thr_meal_canteen_terminal a
+                   where a.del_if = 0
+                   and a.machine_type = '2'
+                   and a.terminal_id = t.location
+                           )
+                           ;
+
+
+----------------------------------------------------------------------------------------------------
+20190327
+
+--update thr_work_date a
+--    set A.TCO_ORG_PK = HR_F_GET_ORG_PK(A.THR_EMP_PK, '20190331')
+--        , A.REMARK = A.REMARK || '* MR Dung TV: ' || sysdate ||' UPDATE TCO_ORG_PK'
+--        , A.MOD_BY = 'MR Dung TV'
+--        , A.MOD_DT = sysdate
+--where a.del_if = 0
+--    and a.pk in (select b.pk from thr_work_date b
+--                    where b.del_if = 0
+--                        and b.work_dt between '20190301' and  '20190330'
+--                        and b.thr_emp_pk in (select  t.thr_emp_pk
+--                                                 from (select   a.thr_emp_pk , a.tco_org_pk 
+--                                                            from thr_work_date a
+--                                                            where a.del_if = 0
+--                                                                and a.work_dt between '20190301' and  '20190331'
+--                                                            group by a.thr_emp_pk  , a.tco_org_pk) t
+--                                                 group by t.thr_emp_pk
+--                                                having count(*) > 1
+--                                           ))
+
+
+
+select * from recyclebin
+order by createtime
+
+--create table thr_reg_absence_temp as
+--select * from thr_reg_absence a where a.del_if = 0
+
+drop table thr_reg_absence_temp
+
+
+select * from thr_reg_absence_temp
+
+flashback table thr_reg_absence_temp to before drop rename to thr_reg_absence_temp_old
+
+select * from thr_reg_absence_temp_old
+
+delete thr_reg_absence_temp_old a
+where a.pk = 3
+
+
+select * from thr_reg_absence_temp_old a
+where a.pk = 3
+
+flashback table thr_reg_absence_temp_old to timestamp (systimestamp - interval '1' minute);
+
+select table_name,ROW_MOVEMENT from thr_reg_absence_temp_old
+
+drop table thr_reg_absence_temp_old purge
+
+
+
+
+
+select * from thr_discipline a
+where a.pk = 754
+
+select to_char(sysdate,'dd-mm-yyyy hh12:mi:ss') from dual  -- 10-04-2019 06:20:04
+
+
+update  thr_discipline a
+set a.reason = ''
+where a.pk = 754
+
+commit
+
+flashback table thr_discipline to timestamp to_timestamp('10-04-2019 06:20:04','dd-mm-yyyy hh12:mi:ss')
+
+alter table thr_discipline enable row movement
+
+flashback table thr_discipline to before drop rename to thr_discipline_old
+
+
+
+----------------------------------------------------------------------
+
+select e.*, row_number() over(partition by E.TCO_ORG_PK, E.POS_TYPE order by E.TCO_ORG_PK, E.POS_TYPE) as nr
+ from thr_employee e
+where e.del_if = 0
+
+

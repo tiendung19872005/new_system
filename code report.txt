@@ -1,0 +1,82 @@
+if(merge_rows > 0)
+{
+	int startmerg = row_loop_2  + insert_rows - merge_rows;
+	int merg = startmerg;
+	
+	string value_start = dt_req_req.Rows[0][14].ToString();
+	string value_end = dt_req_req.Rows[0][14].ToString();
+	for(int k = 1 ; k <= merge_rows ; k++)
+	{ 
+		value_end = dt_req_req.Rows[k][14].ToString();            
+
+		if(value_start != value_end)
+		{     
+			value_start = value_end;
+			exSheet.Cells[startmerg, 1,merg, 1].Merge = true;	
+			startmerg = merg + 1;
+			merg ++;
+			
+		}else
+		{
+			merg ++;
+		}
+	}
+	if(value_start == value_end)
+	{                            
+		exSheet.Cells[startmerg, 1,merg, 1].Merge = true;	
+	}
+}
+
+Slipt in c#
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if(advantage != "" && defect != "")
+{
+	string[] l_advantage = advantage.Split(new char[]{'\n'},StringSplitOptions.RemoveEmptyEntries); 
+	string[] l_defect = defect.Split(new char[]{'\n'},StringSplitOptions.RemoveEmptyEntries); 
+	max_length = l_advantage.Length;
+	if(l_defect.Length > max_length)
+	{
+		max_length = l_defect.Length;
+	}
+	for (int l_addrow = 1; l_addrow < max_length; l_addrow++)
+	{
+		
+		exSheet.InsertRow(row_loop + l_addrow , 1);
+		exSheet.Cells[row_loop, 1, row_loop, l_total_col].Copy(exSheet.Cells[row_loop + l_addrow, 1, row_loop + l_addrow, l_total_col]);
+		exSheet.Row(row_loop + l_addrow).Height = 13.8;
+		exSheet.DefaultRowHeight = 13.8;
+		insert_row ++;
+		
+	}
+	for(int i = 0; i< max_length; i++)
+	{	
+		if(i < l_advantage.Length)
+		{
+			exSheet.Cells[row_loop +i, 3].Value = l_advantage[i];
+		}
+		if(i < l_defect.Length)
+		{
+			exSheet.Cells[row_loop +i, 8].Value = l_defect[i];
+		}
+	}
+	
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+hinh
+
+using OfficeOpenXml.Drawing;
+
+	byte[] MyDataImage = new byte[0];
+	MyDataImage = (byte[])dt_1.Rows[1][0];
+	MemoryStream stream = new MemoryStream(MyDataImage);
+	Bitmap image = new Bitmap(stream);				
+	ExcelPicture excelImage = null;
+	int colIndex = 2;
+	int rowIndex = insert_row + 18;
+	excelImage = exSheet.Drawings.AddPicture("Pic_pass" , image);
+	excelImage.From.Column = colIndex;
+	excelImage.From.Row = rowIndex;
+	excelImage.SetPosition(rowIndex, 2, colIndex, 2);
+	excelImage.SetSize(25, 25);
